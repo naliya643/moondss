@@ -2,11 +2,15 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "../AdminLayout";
 
+// Pastikan API URL sudah benar
 const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 export default function KriteriaPage() {
+  // list diinisialisasi sebagai Array kosong: [] (Sudah benar)
   const [list, setList] = useState([]);
   const [form, setForm] = useState({ kode: "", nama: "", bobot: "", jenis: "benefit" });
+  
+  // Ambil token dari localStorage
   const token = typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
 
   useEffect(() => { fetchAll(); }, []);
@@ -16,9 +20,37 @@ export default function KriteriaPage() {
       const res = await fetch(`${API}/admin/kriteria`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+      
       const data = await res.json();
-      setList(data.data || data || []);
-    } catch (e) { console.error(e); }
+      
+      let fetchedList = [];
+      
+      // 1. Cek dulu apakah response dari API sukses (status 2xx)
+      if (!res.ok) {
+        console.error("Fetch Gagal (Respon Server):", data);
+        alert(`Gagal memuat data: ${data.detail || "Terjadi kesalahan server."}`);
+        // Jika gagal, biarkan fetchedList tetap []
+      } else {
+        // 2. Jika sukses, cek apakah data yang diterima adalah Array.
+        // Kita prioritaskan data.data, lalu fallback ke data.
+        if (Array.isArray(data.data)) {
+          fetchedList = data.data; 
+        } else if (Array.isArray(data)) {
+          fetchedList = data;
+        } else {
+          console.warn("Data yang diterima bukan Array, melainkan:", data);
+          // Jika bukan Array, fetchedList tetap []
+        }
+      }
+      
+      setList(fetchedList);
+      
+    } catch (e) { 
+      // Jika terjadi kesalahan koneksi (misal network error), pastikan list tetap Array
+      console.error("Ada masalah saat fetching data (Koneksi):", e); 
+      alert("Gagal terhubung ke API.");
+      setList([]); 
+    }
   }
 
   async function handleAdd(e) {
@@ -32,15 +64,31 @@ export default function KriteriaPage() {
         },
         body: JSON.stringify(form),
       });
-      if (res.ok) { setForm({ kode: "", nama: "", bobot: "", jenis: "benefit" }); fetchAll(); }
-      else { const j = await res.json(); alert(j.detail || "Gagal tambah"); }
-    } catch (err) { console.error(err); }
+      if (res.ok) { 
+        setForm({ kode: "", nama: "", bobot: "", jenis: "benefit" }); 
+        fetchAll(); // Refresh data setelah tambah
+      }
+      else { 
+        const j = await res.json(); 
+        alert(j.detail || "Gagal tambah"); 
+      }
+    } catch (err) { 
+      console.error(err); 
+    }
   }
 
   async function handleDelete(id) {
     if (!confirm("Hapus kriteria?")) return;
-    await fetch(`${API}/admin/kriteria/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
-    fetchAll();
+    const res = await fetch(`${API}/admin/kriteria/${id}`, { 
+        method: "DELETE", 
+        headers: { Authorization: `Bearer ${token}` } 
+    });
+    if (res.ok) {
+        fetchAll(); // Refresh data setelah hapus
+    } else {
+        const j = await res.json();
+        alert(j.detail || "Gagal hapus");
+    }
   }
 
   return (
@@ -66,7 +114,9 @@ export default function KriteriaPage() {
             <tr><th className="p-2">#</th><th>Kode</th><th>Nama</th><th>Bobot</th><th>Tipe</th><th>Aksi</th></tr>
           </thead>
           <tbody>
-            {list.map((k, i) => (
+            {/* Pengecekan Array.isArray(list) sudah tidak terlalu krusial karena fetchAll sudah menjamin list adalah Array,
+                tapi kita tetap pasang pengecekan untuk berjaga-jaga */}
+            {Array.isArray(list) && list.map((k, i) => (
               <tr key={k.id || i} className="border-b text-sm">
                 <td className="p-2">{i+1}</td>
                 <td className="p-2">{k.kode}</td>
@@ -78,6 +128,13 @@ export default function KriteriaPage() {
                 </td>
               </tr>
             ))}
+            {Array.isArray(list) && list.length === 0 && (
+                <tr>
+                    <td colSpan="6" className="p-4 text-center text-gray-500">
+                        Tidak ada data kriteria.
+                    </td>
+                </tr>
+            )}
           </tbody>
         </table>
       </div>

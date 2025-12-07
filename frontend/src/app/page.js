@@ -46,16 +46,17 @@ export default function Home() {
         />
 
         {/* Tagline */}
-        <h3
-          className="text-lg max-w-xl leading-relaxed mb-2"
-          style={{
-            fontFamily: "Segoe UI, Arial, sans-serif",
-            color: COLORS.greenText,
-          }}
-        >
-          Temukan Kandungan Skincare Paling Tepat Untuk Kulitmu Dan Dapatkan
-          Kulit Sehat Impianmu!
-        </h3>
+            <h3
+       className="text-lg max-w-xl leading-relaxed mb-15 -mt-17"
+
+        style={{
+          fontFamily: "Segoe UI, Arial, sans-serif",
+          color: COLORS.greenText,
+        }}
+      >
+        Temukan Kandungan Skincare Paling Tepat Untuk Kulitmu Dan Dapatkan
+        Kulit Sehat Impianmu!
+      </h3> 
 
         {/* Tombol */}
         <div className="flex flex-col md:flex-row gap-6 mt-2">

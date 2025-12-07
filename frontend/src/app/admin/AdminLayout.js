@@ -2,6 +2,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+// Definisikan warna Hijau baru
+const COLORS = {
+  bgMain: "bg-[#F4F7F2]",      // Latar belakang halaman
+  greenText: "#2F4F3A",        // Teks utama, Judul, Background tombol Logout
+  hoverBg: "hover:bg-[#DDE6D5]", // Background hover link sidebar
+  asideBorder: "border-[#C8D3BE]", // Border sidebar
+};
+
 export default function AdminLayout({ children }) {
   const router = useRouter();
 
@@ -11,16 +19,28 @@ export default function AdminLayout({ children }) {
   };
 
   return (
-    <div className="flex bg-[#F7FEF8] min-h-screen">
-      <aside className="w-64 bg-white shadow-lg p-6 border-r border-[#ffd6e6]">
-        <h2 className="text-2xl font-bold mb-6 text-[#FF7FA5]">Admin Panel</h2>
+    // Latar Belakang Layout
+    <div className={`flex ${COLORS.bgMain} min-h-screen`}> 
+      {/* Sidebar */}
+      <aside className={`w-64 bg-white shadow-lg p-6 border-r ${COLORS.asideBorder}`}>
+        {/* Judul Panel */}
+        <h2 className="text-2xl font-bold mb-6" style={{ color: COLORS.greenText }}>Admin Panel</h2>
 
         <nav className="flex flex-col gap-3">
-          <Link href="/admin/dashboard" className="block p-3 rounded-md hover:bg-[#fff0f6]">Dashboard</Link>
-          <Link href="/admin/kriteria" className="block p-3 rounded-md hover:bg-[#fff0f6]">Data Kriteria</Link>
-          <Link href="/admin/kandungan" className="block p-3 rounded-md hover:bg-[#fff0f6]">Data Kandungan</Link>
-          <Link href="/admin/produk" className="block p-3 rounded-md hover:bg-[#fff0f6]">Data Produk</Link>
-          <button onClick={logout} className="mt-6 p-2 rounded-md bg-[#FF7FA5] text-white">Logout</button>
+          {/* Link-link dengan warna hover baru */}
+          <Link href="/admin/dashboard" className={`block p-3 rounded-md ${COLORS.hoverBg}`}>Dashboard</Link>
+          <Link href="/admin/kriteria" className={`block p-3 rounded-md ${COLORS.hoverBg}`}>Data Kriteria</Link>
+          <Link href="/admin/kandungan" className={`block p-3 rounded-md ${COLORS.hoverBg}`}>Data Kandungan</Link>
+          <Link href="/admin/produk" className={`block p-3 rounded-md ${COLORS.hoverBg}`}>Data Produk</Link>
+          
+          {/* Tombol Logout */}
+          <button 
+            onClick={logout} 
+            className="mt-6 p-2 rounded-md text-white" 
+            style={{ backgroundColor: COLORS.greenText }} // Background Hijau Tua
+          >
+            Logout
+          </button>
         </nav>
       </aside>
 
