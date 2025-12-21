@@ -39,30 +39,20 @@ def verify_admin_token(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
 
-import bcrypt
-from fastapi import HTTPException
-
+# ================== LOGIN PLAIN ==================
 @app.post("/admin/login")
 def admin_login(data: AdminLogin):
-
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
     try:
         cursor.execute(
-            "SELECT * FROM admin WHERE username=%s",
-            (data.username,)
+            "SELECT * FROM admin WHERE username=%s AND password=%s",
+            (data.username, data.password)
         )
         admin = cursor.fetchone()
 
         if not admin:
-            raise HTTPException(status_code=401, detail="Username atau password salah")
-
-        # 🔐 CEK PASSWORD HASH
-        if not bcrypt.checkpw(
-            data.password.encode(),
-            admin["password"].encode()
-        ):
             raise HTTPException(status_code=401, detail="Username atau password salah")
 
         return {
@@ -73,6 +63,7 @@ def admin_login(data: AdminLogin):
     finally:
         cursor.close()
         db.close()
+
 
 # ================== TOPSIS ==================
 class InputData(BaseModel):
@@ -87,6 +78,7 @@ def analyze(data: InputData):
     if not hasil:
         raise HTTPException(status_code=400, detail="Tidak ada hasil analisis")
     return hasil[0]
+
 
 # ================== PRODUK PUBLIC ==================
 @app.get("/produk")
@@ -113,6 +105,7 @@ def get_produk(kandungan: Optional[str] = None):
     finally:
         cursor.close()
         db.close()
+
 
 # ================== ADMIN PRODUK ==================
 @app.get("/admin/produk", dependencies=[Depends(verify_admin_token)])
@@ -181,6 +174,7 @@ def delete_produk(produk_id: int):
         cursor.close()
         db.close()
 
+
 @app.put("/admin/produk/{produk_id}", dependencies=[Depends(verify_admin_token)])
 async def update_produk(
     produk_id: int,
@@ -195,7 +189,6 @@ async def update_produk(
 
     try:
         foto_path = None
-
         if foto:
             os.makedirs("static/photos", exist_ok=True)
             filename = f"{int(time.time())}_{foto.filename}"
@@ -270,6 +263,7 @@ def add_kandungan(data: KandunganInput):
         cursor.close()
         db.close()
 
+
 @app.delete("/admin/kandungan/{kandungan_id}", dependencies=[Depends(verify_admin_token)])
 def delete_kandungan(kandungan_id: int):
     db = get_db()
@@ -282,6 +276,7 @@ def delete_kandungan(kandungan_id: int):
     finally:
         cursor.close()
         db.close()
+
 
 @app.put("/admin/kandungan/{kandungan_id}", dependencies=[Depends(verify_admin_token)])
 def update_kandungan(kandungan_id: int, data: KandunganInput):
@@ -330,6 +325,7 @@ def get_kriteria():
         cursor.close()
         db.close()
 
+
 @app.put("/admin/kriteria/{kode}", dependencies=[Depends(verify_admin_token)])
 def update_kriteria(kode: str, data: KriteriaInput):
     db = get_db()
@@ -355,6 +351,7 @@ def update_kriteria(kode: str, data: KriteriaInput):
     finally:
         cursor.close()
         db.close()
+
 
 @app.delete("/admin/kriteria/{kode}", dependencies=[Depends(verify_admin_token)])
 def delete_kriteria(kode: str):
