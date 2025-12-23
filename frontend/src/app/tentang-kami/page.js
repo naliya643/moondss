@@ -212,7 +212,7 @@ export default function TentangKami() {
         style={{ backgroundColor: COLORS.footerBg }}
       >
         <p className="text-sm">
-          © 2025 <span className="font-semibold">SPK Skincare</span> | Hilaliya's Project
+          © 2025 <span className="font-semibold">SPK Skincare</span> | Hilaliya&apos;s Project
         </p>
 
         <div className="mt-3">
