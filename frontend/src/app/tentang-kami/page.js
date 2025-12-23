@@ -87,7 +87,7 @@ export default function TentangKami() {
         >
           {/* FOTO BULET */}
           <img
-            src="/gue.JPEG"
+            src="/gue.jpeg"
             alt="Foto Pengembang"
             className="w-35 h-35 rounded-full object-cover border-2 shadow-sm"
             style={{ borderColor: COLORS.title }}
