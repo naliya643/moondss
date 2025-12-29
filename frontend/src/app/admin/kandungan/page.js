@@ -7,6 +7,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 export default function KandunganPage() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(""); // State baru untuk pencarian
 
   // form state for add
   const emptyForm = {
@@ -31,6 +32,11 @@ export default function KandunganPage() {
   useEffect(() => {
     fetchAll();
   }, []);
+
+  // Filter list berdasarkan nama kandungan
+  const filteredList = list.filter((item) =>
+    item.nama_kandungan.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   function normalizeItem(item) {
     return {
@@ -132,21 +138,43 @@ export default function KandunganPage() {
 
   return (
     <AdminLayout>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-[#2F4F3A]">Data Kandungan</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setIsAddOpen(true)}
-            className="px-4 py-2 bg-[#2F4F3A] text-white rounded-lg hover:bg-green-800 transition flex items-center gap-2 font-semibold shadow-sm"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-            Tambah Kandungan
-          </button>
-          <button onClick={fetchAll} className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition">
-            Refresh
-          </button>
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-[#2F4F3A]">Data Kandungan</h1>
+          <p className="text-sm text-gray-500">Total: {filteredList.length} data</p>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Search Bar Imut */}
+          <div className="relative group">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 group-focus-within:text-[#2F4F3A] transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+            <input
+              type="text"
+              placeholder="Cari kandungan..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 w-full sm:w-64 bg-white border border-gray-200 rounded-full outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all shadow-sm text-sm"
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsAddOpen(true)}
+              className="px-4 py-2 bg-[#2F4F3A] text-white rounded-lg hover:bg-green-800 transition flex items-center gap-2 font-semibold shadow-sm text-sm"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+              Tambah
+            </button>
+            <button onClick={fetchAll} className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition text-sm">
+              Refresh
+            </button>
+          </div>
         </div>
       </div>
 
@@ -167,32 +195,36 @@ export default function KandunganPage() {
           <tbody>
             {loading ? (
               <tr><td colSpan={8} className="p-10 text-center text-gray-400">Memuat data...</td></tr>
-            ) : list.map((k, i) => (
-              <tr key={k.id || i} className="border-b hover:bg-green-50/30 transition">
-                <td className="p-4 text-gray-500">{i + 1}</td>
-                <td className="p-4 font-semibold text-gray-800">{k.nama_kandungan}</td>
-                <td className="p-4 text-gray-600 max-w-xs truncate">{k.deskripsi}</td>
-                <td className="p-4 text-center"><span className="px-2 py-1 bg-gray-100 rounded text-xs">{k.c1}</span></td>
-                <td className="p-4 text-center"><span className="px-2 py-1 bg-gray-100 rounded text-xs">{k.c2}</span></td>
-                <td className="p-4 text-center"><span className="px-2 py-1 bg-gray-100 rounded text-xs">{k.c3}</span></td>
-                <td className="p-4 text-center font-bold text-green-700">{k.c4}</td>
-                <td className="p-4">
-                  <div className="flex justify-center gap-2">
-                    <button onClick={() => openEdit(k)} className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-md hover:bg-blue-700 transition">
-                      Edit
-                    </button>
-                    <button onClick={() => handleDelete(k.id)} className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white text-xs font-bold rounded-md hover:bg-red-600 transition">
-                      Hapus
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            ) : filteredList.length > 0 ? (
+              filteredList.map((k, i) => (
+                <tr key={k.id || i} className="border-b hover:bg-green-50/30 transition">
+                  <td className="p-4 text-gray-500">{i + 1}</td>
+                  <td className="p-4 font-semibold text-gray-800">{k.nama_kandungan}</td>
+                  <td className="p-4 text-gray-600 max-w-xs truncate">{k.deskripsi}</td>
+                  <td className="p-4 text-center"><span className="px-2 py-1 bg-gray-100 rounded text-xs">{k.c1}</span></td>
+                  <td className="p-4 text-center"><span className="px-2 py-1 bg-gray-100 rounded text-xs">{k.c2}</span></td>
+                  <td className="p-4 text-center"><span className="px-2 py-1 bg-gray-100 rounded text-xs">{k.c3}</span></td>
+                  <td className="p-4 text-center font-bold text-green-700">{k.c4}</td>
+                  <td className="p-4">
+                    <div className="flex justify-center gap-2">
+                      <button onClick={() => openEdit(k)} className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-md hover:bg-blue-700 transition">
+                        Edit
+                      </button>
+                      <button onClick={() => handleDelete(k.id)} className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white text-xs font-bold rounded-md hover:bg-red-600 transition">
+                        Hapus
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr><td colSpan={8} className="p-10 text-center text-gray-400">Data tidak ditemukan.</td></tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* MODAL (Tambah & Edit menggunakan template yang sama) */}
+      {/* MODAL (Tetap sama) */}
       {(isAddOpen || isEditOpen) && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200">

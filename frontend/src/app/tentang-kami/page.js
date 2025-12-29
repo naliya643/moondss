@@ -19,7 +19,7 @@ export default function TentangKami() {
 
   return (
     <section
-      className="min-h-screen py-16 px-6"
+      className="min-h-screen flex flex-col px-6 pt-16"
       style={{
         backgroundColor: COLORS.bg,
         color: COLORS.text,
@@ -60,24 +60,17 @@ export default function TentangKami() {
       </button>
 
       {/* JUDUL */}
-      <div className="text-center mb-25">
-        <h1
-          className="text-3xl font-semibold"
-          style={{ color: COLORS.title }}
-        >
+      <div className="text-center mb-20">
+        <h1 className="text-3xl font-semibold" style={{ color: COLORS.title }}>
           Sistem Pendukung Keputusan Pemilihan Kandungan Skincare Yang Tepat
-          Untuk Kulit Dengan Tipe Berjerawat Menggunakan Metode{" "}
+          Untuk Kulit Berjerawat Menggunakan Metode{" "}
           <span className="font-bold">TOPSIS</span>.
-
         </h1>
       </div>
 
       {/* TIM */}
-      <div className="max-w-4xl mx-auto mt-16 mb-12">
-        <h2
-          className="text-2xl font-bold mb-3 text-center"
-          style={{ color: COLORS.title }}
-        >
+      <div className="max-w-4xl mx-auto mt-1 mb-12">
+        <h2 className="text-2xl font-bold mb-3 text-center" style={{ color: COLORS.title }}>
           Pengembang Aplikasi
         </h2>
 
@@ -85,7 +78,6 @@ export default function TentangKami() {
           className="p-6 rounded-2xl shadow-md flex items-start gap-6"
           style={{ backgroundColor: COLORS.cardBg }}
         >
-          {/* FOTO BULET */}
           <img
             src="/lala.png"
             alt="Foto Pengembang"
@@ -93,73 +85,49 @@ export default function TentangKami() {
             style={{ borderColor: COLORS.title }}
           />
 
-          {/* TEKS */}
           <div>
-            <p
-              className="text-lg font-semibold mb-2"
-              style={{ color: COLORS.title }}
-            >
+            <p className="text-lg font-semibold mb-2" style={{ color: COLORS.title }}>
               Hilaliya
             </p>
 
-            <p
-              className="leading-relaxed"
-              style={{ color: COLORS.text }}
-            >
+            <p className="leading-relaxed">
               Hai!
-              <span className="font-semibold"> </span>
-            </p>
-                        <p
-              className="leading-relaxed"
-              style={{ color: COLORS.text }}
-            >
-              Aku persembahkan Sistem Pendukung Keputusan ini untuk teman-teman sesama Acne Fighter. Semoga sistem ini dapat dikembangkan menjadi sistem yang dapat menghasilkan 
-              hasil analisis yang akurat dan valid, sehingga dapat bermanfaat bagi kita semua!
-              <span className="font-semibold"> </span>
             </p>
 
+            <p className="leading-relaxed">
+              Aku persembahkan Sistem Pendukung Keputusan ini untuk teman-teman
+              sesama Acne Fighter. Semoga sistem ini dapat dikembangkan menjadi
+              sistem yang dapat menghasilkan hasil analisis yang akurat dan
+              valid, sehingga dapat bermanfaat bagi kita semua!
+            </p>
           </div>
         </div>
       </div>
 
-
       {/* VISI & MISI */}
-
-    <h2
-          className="text-2xl font-bold mb-1 text-center"
-          style={{ color: COLORS.title }}
-        >
-          Visi & Misi
-       </h2>
+      <h2 className="text-2xl font-bold mb-1 text-center" style={{ color: COLORS.title }}>
+        Visi & Misi
+      </h2>
 
       <div
-        className="max-w-4xl mx-auto p-8 rounded-2xl shadow-md mt-3"
+        className="max-w-4xl mx-auto p-8 rounded-2xl shadow-md mt-1"
         style={{ backgroundColor: COLORS.cardBg }}
       >
-        <h2
-          className="text-2xl font-bold mb-4"
-          style={{ color: COLORS.title }}
-        >
+        <h2 className="text-2xl font-bold mb-4" style={{ color: COLORS.title }}>
           Visi
         </h2>
 
-        <p className="mb-8 leading-relaxed" style={{ color: COLORS.text }}>
+        <p className="mb-8 leading-relaxed">
           Menjadi platform yang membantu dalam pemilihan kandungan skincare
           dengan tepat, mudah digunakan, dan memberikan edukasi tentang
           kandungan skincare secara informatif.
         </p>
 
-        <h2
-          className="text-2xl font-bold mb-4"
-          style={{ color: COLORS.title }}
-        >
+        <h2 className="text-2xl font-bold mb-4" style={{ color: COLORS.title }}>
           Misi
         </h2>
 
-        <ul
-          className="list-disc ml-6 space-y-2 leading-relaxed"
-          style={{ color: COLORS.text }}
-        >
+        <ul className="list-disc ml-6 space-y-2 leading-relaxed">
           <li>Membantu pengguna memahami fungsi dan manfaat setiap kandungan skincare.</li>
           <li>Menyediakan pengalaman aplikasi yang sederhana dan informatif.</li>
           <li>Mendukung edukasi skincare berbasis data dan analisis ilmiah.</li>
@@ -167,11 +135,8 @@ export default function TentangKami() {
       </div>
 
       {/* CONTACT */}
-      <div className="text-center mt-16" id="contact">
-        <h2
-          className="text-3xl font-bold mb-6"
-          style={{ color: COLORS.title }}
-        >
+      <div className="text-center mt-16 mb-15" id="contact">
+        <h2 className="text-3xl font-bold mb-6" style={{ color: COLORS.title }}>
           Connect With Me
         </h2>
 
@@ -181,7 +146,6 @@ export default function TentangKami() {
             target="_blank"
             rel="noopener noreferrer"
             className="text-3xl transition"
-            style={{ color: COLORS.text }}
           >
             <i className="fa-brands fa-whatsapp"></i>
           </a>
@@ -191,7 +155,6 @@ export default function TentangKami() {
             target="_blank"
             rel="noopener noreferrer"
             className="text-3xl transition"
-            style={{ color: COLORS.text }}
           >
             <i className="fa-brands fa-instagram"></i>
           </a>
@@ -199,7 +162,6 @@ export default function TentangKami() {
           <a
             href="mailto:hilaliyah643@gmail.com"
             className="text-3xl transition"
-            style={{ color: COLORS.text }}
           >
             <i className="fa-solid fa-envelope"></i>
           </a>
@@ -207,23 +169,24 @@ export default function TentangKami() {
       </div>
 
       {/* FOOTER */}
-      <footer
-        className="text-white text-center py-6 mt-20 rounded-t-2xl"
-        style={{ backgroundColor: COLORS.footerBg }}
-      >
-        <p className="text-sm">
-          © 2025 <span className="font-semibold">SPK Skincare</span> | Hilaliya&apos;s Project
-        </p>
+      <div className="mt-auto w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+        <footer
+          className="w-full text-white text-center py-6 rounded-t-2xl"
+          style={{ backgroundColor: COLORS.footerBg }}
+        >
+          <p className="text-sm">
+            © 2025 <span className="font-semibold">SPK Skincare</span> | Hilaliya&apos;s Project
+          </p>
 
-        <div className="mt-3">
-          <a
-            href="#contact"
-            className="text-white text-2xl hover:opacity-80 transition-opacity"
-          >
-            <i className="fa-solid fa-arrow-up"></i>
-          </a>
-        </div>
-      </footer>
+          <div className="mt-3">
+            <a
+              href="#contact"
+              className="text-white text-2xl hover:opacity-80 transition-opacity"
+            >
+            </a>
+          </div>
+        </footer>
+      </div>
     </section>
   );
 }

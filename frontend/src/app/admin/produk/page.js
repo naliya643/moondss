@@ -8,6 +8,7 @@ export default function ProdukPage() {
   const [list, setList] = useState([]);
   const [fetchError, setFetchError] = useState(null);
   const [diagnostics, setDiagnostics] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(""); // State untuk pencarian
 
   const [form, setForm] = useState({
     nama: "",
@@ -26,6 +27,11 @@ export default function ProdukPage() {
   useEffect(() => {
     fetchAll();
   }, []);
+
+  // Logika Filter Produk
+  const filteredList = (list || []).filter((p) =>
+    p.nama?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   async function fetchAll() {
     const candidateBases = [API, "http://127.0.0.1:8000", "http://localhost:8000"];
@@ -68,6 +74,7 @@ export default function ProdukPage() {
     }
   }
 
+  // ... (handleAdd, handleDelete, startEdit, cancelEdit, handleUpdate tetap sama)
   async function handleAdd(e) {
     e.preventDefault();
     const fd = new FormData();
@@ -93,9 +100,7 @@ export default function ProdukPage() {
         const j = await res.json();
         alert(j.detail || "Gagal tambah produk");
       }
-    } catch (err) {
-      alert("Gagal terhubung ke API.");
-    }
+    } catch (err) { alert("Gagal terhubung ke API."); }
   }
 
   async function handleDelete(id) {
@@ -110,9 +115,7 @@ export default function ProdukPage() {
         const j = await res.json();
         alert(j.detail || "Gagal hapus produk.");
       }
-    } catch (e) {
-      alert("Gagal terhubung ke API.");
-    }
+    } catch (e) { alert("Gagal terhubung ke API."); }
   }
 
   function startEdit(product) {
@@ -135,7 +138,6 @@ export default function ProdukPage() {
   async function handleUpdate(e) {
     e.preventDefault();
     if (!editingId) return;
-
     const fd = new FormData();
     fd.append("nama", currentEditForm.nama);
     fd.append("harga", currentEditForm.harga);
@@ -148,39 +150,56 @@ export default function ProdukPage() {
         ? { method: "PUT", headers: { Authorization: `Bearer ${token}` }, body: fd }
         : { method: "PUT", body: fd };
       const res = await fetch(`${API}/admin/produk/${editingId}`, options);
-
-      if (res.ok) {
-        cancelEdit();
-        fetchAll();
-      } else {
+      if (res.ok) { cancelEdit(); fetchAll(); } 
+      else {
         const j = await res.json();
         alert(j.detail || "Gagal update produk");
       }
-    } catch (err) {
-      alert("Gagal terhubung ke API.");
-    }
+    } catch (err) { alert("Gagal terhubung ke API."); }
   }
 
   return (
     <AdminLayout>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-[#2F4F3A]">Data Produk</h1>
-        <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="px-4 py-2 bg-[#2F4F3A] text-white rounded hover:bg-green-700 transition flex items-center gap-2 font-semibold shadow-sm"
-        >
-          {showAddForm ? "Tutup Form" : (
-            <>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-[#2F4F3A]">Data Produk</h1>
+          <p className="text-sm text-gray-500">Menampilkan {filteredList.length} produk</p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Search Bar Imut */}
+          <div className="relative group">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 group-focus-within:text-[#2F4F3A] transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              Tambah Produk
-            </>
-          )}
-        </button>
+            </span>
+            <input
+              type="text"
+              placeholder="Cari nama produk..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 w-full sm:w-64 bg-white border border-gray-200 rounded-full outline-none focus:ring-2 focus:ring-green-500 transition-all shadow-sm text-sm"
+            />
+          </div>
+
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="px-4 py-2 bg-[#2F4F3A] text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2 font-semibold shadow-sm text-sm"
+          >
+            {showAddForm ? "Tutup Form" : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                </svg>
+                Tambah Produk
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
-      {/* MODAL FORM EDIT - LATAR BELAKANG TRANSPARAN & BLUR */}
+      {/* MODAL FORM EDIT */}
       {editingId && currentEditForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in duration-200">
@@ -245,7 +264,7 @@ export default function ProdukPage() {
 
       {/* TABEL PRODUK */}
       <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
-        <table className="w-full">
+        <table className="w-full text-sm">
           <thead className="bg-green-50 text-[#2F4F3A]">
             <tr className="text-left font-semibold">
               <th className="p-4">#</th>
@@ -257,12 +276,12 @@ export default function ProdukPage() {
             </tr>
           </thead>
           <tbody>
-            {Array.isArray(list) && list.map((p, i) => (
+            {filteredList.length > 0 ? filteredList.map((p, i) => (
               <tr key={p.id || i} className="border-b hover:bg-green-50/20 transition">
                 <td className="p-4 text-gray-500">{i + 1}</td>
                 <td className="p-4 font-semibold text-gray-800">{p.nama}</td>
                 <td className="p-4 text-gray-600">{p.kandungan || '-'}</td>
-                <td className="p-4 font-mono text-green-700 font-bold">Rp {Number(p.harga).toLocaleString()}</td>
+                <td className="p-4 font-mono text-green-700 font-bold text-base">Rp {Number(p.harga).toLocaleString()}</td>
                 <td className="p-4">
                   {p.foto ? (
                     <img src={`${API}${String(p.foto).replace(/\\/g, '/').replace(/^\/+/, '/')}`} className="w-12 h-12 object-cover rounded-lg shadow-sm border border-gray-200" alt="" />
@@ -271,21 +290,17 @@ export default function ProdukPage() {
                 <td className="p-4">
                   <div className="flex justify-center gap-2">
                     <button onClick={() => startEdit(p)} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-md hover:bg-blue-700 transition shadow-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
                       Edit
                     </button>
                     <button onClick={() => handleDelete(p.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white text-xs font-bold rounded-md hover:bg-red-600 transition shadow-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
                       Hapus
                     </button>
                   </div>
                 </td>
               </tr>
-            ))}
+            )) : (
+              <tr><td colSpan={6} className="p-10 text-center text-gray-400">Data tidak ditemukan.</td></tr>
+            )}
           </tbody>
         </table>
       </div>

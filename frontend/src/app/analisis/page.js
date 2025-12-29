@@ -70,7 +70,7 @@ export default function AnalisisPage() {
 
         {/* Judul */}
         <h1
-          className="text-2xl md:text-3xl font-bold mb-8"
+          className="text-2xl md:text-3xl font-bold mb-8 -mt-13"
           style={{ color: COLORS.textAccent }}
         >
           Bagaimana Kondisi Kulitmu?
@@ -156,11 +156,10 @@ export default function AnalisisPage() {
               {/* helper */}
               <option
                 value="__HELP__"
-                style={{ color: "#479e27ff", fontWeight: 400 }}
+                style={{ color: "#2bdc18ff", fontWeight: "bold" }}
               >
                 Bingung? Pelajari jerawatmu! →
-              </option>
-            </select>
+              </option>            </select>
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 " style={{ color: "#3A5F47" }}>▼</div>
           </div>
 
