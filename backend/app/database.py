@@ -1,10 +1,12 @@
+import os
 import mysql.connector
 
 def get_db():
     db = mysql.connector.connect(
-        host="localhost",
-        user="root",       # user XAMPP kamu
-        password="",       # password MySQL (biasanya kosong)
-        database="spk_skincare"
+        host=os.getenv("MYSQLHOST"),
+        user=os.getenv("MYSQLUSER"),
+        password=os.getenv("MYSQLPASSWORD"),
+        database=os.getenv("MYSQLDATABASE"),
+        port=int(os.getenv("MYSQLPORT")),
     )
     return db

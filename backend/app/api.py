@@ -13,8 +13,13 @@ from app.database import get_db
 
 # ================== APP INIT ==================
 app = FastAPI()
+@app.get("/")
+def root():
+    return {"status": "API running"}
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+
+if os.path.isdir("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
