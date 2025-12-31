@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function AdminLoginPage() {
   const router = useRouter();
 
@@ -17,7 +19,7 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/admin/login", {
+      const res = await fetch(`${BASE_URL}/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -82,7 +84,6 @@ export default function AdminLoginPage() {
           />
         </div>
 
-        {/* Tombol sudah diubah ke Hijau */}
         <button
           type="submit"
           disabled={loading}
