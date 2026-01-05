@@ -195,7 +195,7 @@ export default function ProdukPage() {
                   <td className="p-4">
                     {p.foto && (
                       <img
-                        src={`${API}/uploads/${p.foto}`}
+                        src={`${API}${p.foto}`} // ✅ path asli dari DB
                         className="w-12 h-12 object-cover rounded"
                       />
                     )}
