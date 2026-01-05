@@ -8,7 +8,7 @@ import shutil
 import time
 import os
 
-from app.topsis import hitung_topsis
+from app.topsis import hitung_topsis, hitung_topsis_detailed
 from app.database import get_db
 
 # ================== APP INIT ==================
@@ -83,6 +83,14 @@ def analyze(data: InputData):
     if not hasil:
         raise HTTPException(status_code=400, detail="Tidak ada hasil analisis")
     return hasil[0]
+
+
+@app.post("/admin/perhitungan", dependencies=[Depends(verify_admin_token)])
+def admin_perhitungan(data: InputData):
+    hasil = hitung_topsis_detailed(data.c1, data.c2, data.c3)
+    if not hasil:
+        raise HTTPException(status_code=400, detail="Tidak ada hasil perhitungan")
+    return hasil
 
 
 # ================== PRODUK PUBLIC ==================
