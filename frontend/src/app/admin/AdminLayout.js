@@ -77,6 +77,15 @@ export default function AdminLayout({ children }) {
             Data Produk
           </Link>
 
+                    <Link
+            href="/admin/perhitungan"
+            className={`block p-3 rounded-md transition-colors ${COLORS.hoverBg} border-b ${COLORS.divider}`}
+            style={{ color: COLORS.greenText, fontWeight: 500 }}
+          >
+            Perhitungan TOPSIS
+          </Link>
+
+
           <Link
             href="/"
             className={`block p-3 rounded-md transition-colors ${COLORS.hoverBg} border-b ${COLORS.divider}`}
