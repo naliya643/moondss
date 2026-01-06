@@ -84,9 +84,6 @@ export default function PerhitunganPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: COLORS.greenText }}>
-                  C1: Jenis Kulit
-                </label>
                 <select
                   name="c1"
                   value={formData.c1}
@@ -102,9 +99,6 @@ export default function PerhitunganPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: COLORS.greenText }}>
-                  C2: Jenis Jerawat
-                </label>
                 <select
                   name="c2"
                   value={formData.c2}
@@ -122,9 +116,6 @@ export default function PerhitunganPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: COLORS.greenText }}>
-                  C3: Tingkat Keparahan
-                </label>
                 <select
                   name="c3"
                   value={formData.c3}
@@ -261,8 +252,8 @@ function Section({ title, children }) {
 function Table({ headers, rows }) {
   return (
     <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
-      <table className="w-full bg-white">
-        <thead className="bg-gradient-to-r from-green-50 to-green-100">
+      <table className="w-full bg-white table-fixed">
+        <thead className="bg-gradient-to-r from-green-50 to-green-100 sticky top-0 z-10">
           <tr>
             {headers.map((h, i) => (
               <th key={i} className="border-b border-gray-300 px-6 py-4 text-left font-semibold text-gray-800">
@@ -271,18 +262,22 @@ function Table({ headers, rows }) {
             ))}
           </tr>
         </thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <tr key={i} className={`hover:bg-gray-50 transition-colors duration-150 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-25'}`}>
-              {r.map((c, j) => (
-                <td key={j} className="border-b border-gray-200 px-6 py-4 text-gray-700">
-                  {c}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
       </table>
+      <div className="max-h-64 overflow-y-auto">
+        <table className="w-full bg-white table-fixed">
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i} className={`hover:bg-gray-50 transition-colors duration-150 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-25'}`}>
+                {r.map((c, j) => (
+                  <td key={j} className="border-b border-gray-200 px-6 py-4 text-gray-700">
+                    {c}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
