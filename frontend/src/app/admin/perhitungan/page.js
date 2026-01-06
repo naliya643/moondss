@@ -98,6 +98,7 @@ export default function PerhitunganPage() {
                   <option value="Berminyak">Berminyak</option>
                   <option value="Kering">Kering</option>
                   <option value="Normal">Normal</option>
+                  <option value="Kombinasi">Kombinasi</option>
                 </select>
               </div>
               <div>

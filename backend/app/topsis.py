@@ -9,7 +9,7 @@ def hitung_topsis(c1_user: str, c2_user: str, c3_user: str) -> List[Dict[str, An
     cursor = db.cursor(dictionary=True)
 
     try:
-        # 1️⃣ Ambil data kandungan dan filter berdasarkan input user
+        # 1️⃣ Ambil data kandungan
         cursor.execute("""
             SELECT id, nama_kandungan, deskripsi, c1, c2, c3, c4
             FROM kandungan
@@ -77,155 +77,15 @@ def hitung_topsis(c1_user: str, c2_user: str, c3_user: str) -> List[Dict[str, An
                 "c2": k["c2"],
                 "c3": k["c3"],
                 "c4": k["c4"],
-                "a_plus": [round(val,4) for val in ideal_positive],
-                "a_minus": [round(val,4) for val in ideal_negative],
-                "d_pos": round(d_pos, 4),
-                "d_neg": round(d_neg, 4),
-                "skor": round(ci, 4)
+                "a_plus": [round(val,6) for val in ideal_positive],
+                "a_minus": [round(val,6) for val in ideal_negative],
+                "d_pos": round(d_pos, 6),
+                "d_neg": round(d_neg, 6),
+                "skor": round(ci, 6)
             })
 
         # 8️⃣ Ranking
         return results
-
-    finally:
-        cursor.close()
-        db.close()
-
-
-def hitung_topsis_detailed(c1_user: str, c2_user: str, c3_user: str) -> Dict[str, Any]:
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-
-    try:
-        # 1️⃣ Ambil data kandungan
-        cursor.execute("""
-            SELECT id, nama_kandungan, deskripsi, c1, c2, c3, c4
-            FROM kandungan
-        """)
-        kandungan_list = cursor.fetchall()
-        if not kandungan_list:
-            return {}
-
-        # 2️⃣ Ambil bobot kriteria (urutan HARUS konsisten)
-        cursor.execute("""
-            SELECT kode, bobot
-            FROM kriteria
-            ORDER BY kode
-        """)
-        kriteria_list = cursor.fetchall()
-        bobot = [float(k["bobot"]) for k in kriteria_list]
-
-        # Data Awal
-        dataAwal = [
-            {
-                "nama_kandungan": k["nama_kandungan"],
-                "c1": k["c1"],
-                "c2": k["c2"],
-                "c3": k["c3"],
-                "c4": k["c4"]
-            }
-            for k in kandungan_list
-        ]
-
-        # 3️⃣ Matriks keputusan (numeric)
-        decision_matrix = []
-        for k in kandungan_list:
-            decision_matrix.append([
-                float(convert_c1(k["c1"])),
-                float(convert_c2(k["c2"])),
-                float(convert_c3(k["c3"])),
-                float(k["c4"]) if k["c4"] is not None else 0.0
-            ])
-
-        matriksKeputusan = [
-            {
-                "nama_kandungan": k["nama_kandungan"],
-                "c1": round(decision_matrix[i][0], 4),
-                "c2": round(decision_matrix[i][1], 4),
-                "c3": round(decision_matrix[i][2], 4),
-                "c4": round(decision_matrix[i][3], 4)
-            }
-            for i, k in enumerate(kandungan_list)
-        ]
-
-        # 4️⃣ Normalisasi matriks
-        normalized_matrix = normalize_matrix(decision_matrix)
-
-        matriksNormalisasi = [
-            {
-                "nama_kandungan": k["nama_kandungan"],
-                "c1": round(normalized_matrix[i][0], 4),
-                "c2": round(normalized_matrix[i][1], 4),
-                "c3": round(normalized_matrix[i][2], 4),
-                "c4": round(normalized_matrix[i][3], 4)
-            }
-            for i, k in enumerate(kandungan_list)
-        ]
-
-        # 5️⃣ Matriks berbobot
-        weighted_matrix = [
-            [normalized_matrix[i][j] * bobot[j] for j in range(len(bobot))]
-            for i in range(len(normalized_matrix))
-        ]
-
-        matriksBerbobot = [
-            {
-                "nama_kandungan": k["nama_kandungan"],
-                "v1": round(weighted_matrix[i][0], 4),
-                "v2": round(weighted_matrix[i][1], 4),
-                "v3": round(weighted_matrix[i][2], 4),
-                "v4": round(weighted_matrix[i][3], 4)
-            }
-            for i, k in enumerate(kandungan_list)
-        ]
-
-        # 6️⃣ Tentukan ideal positif (+) dan negatif (-)
-        ideal_positive = [max(col) for col in zip(*weighted_matrix)]
-        ideal_negative = [min(col) for col in zip(*weighted_matrix)]
-
-        solusiIdeal = {
-            "aPlus": [round(val, 4) for val in ideal_positive],
-            "aMinus": [round(val, 4) for val in ideal_negative]
-        }
-
-        # 7️⃣ Hitung jarak ke A⁺ dan A⁻
-        jarak = []
-        preferensi = []
-        for i, k in enumerate(kandungan_list):
-            d_pos = math.sqrt(sum((weighted_matrix[i][j] - ideal_positive[j]) ** 2 for j in range(len(bobot))))
-            d_neg = math.sqrt(sum((weighted_matrix[i][j] - ideal_negative[j]) ** 2 for j in range(len(bobot))))
-            ci = d_neg / (d_pos + d_neg)  # skor TOPSIS 0-1
-
-            # soft penalty (optional, realistis)
-            if k["c2"] != c2_user:
-                ci *= 0.8
-
-            jarak.append({
-                "nama_kandungan": k["nama_kandungan"],
-                "d_plus": round(d_pos, 4),
-                "d_minus": round(d_neg, 4)
-            })
-
-            preferensi.append({
-                "nama_kandungan": k["nama_kandungan"],
-                "ci": round(ci, 4),
-                "ranking": 0  # akan diisi setelah sorting
-            })
-
-        # 8️⃣ Ranking
-        preferensi.sort(key=lambda x: x["ci"], reverse=True)
-        for i, p in enumerate(preferensi, start=1):
-            p["ranking"] = i
-
-        return {
-            "dataAwal": dataAwal,
-            "matriksKeputusan": matriksKeputusan,
-            "matriksNormalisasi": matriksNormalisasi,
-            "matriksBerbobot": matriksBerbobot,
-            "solusiIdeal": solusiIdeal,
-            "jarak": jarak,
-            "preferensi": preferensi
-        }
 
     finally:
         cursor.close()
@@ -317,10 +177,10 @@ def hitung_topsis_detailed(c1_user: str, c2_user: str, c3_user: str) -> Dict[str
         matriksKeputusan = [
             {
                 "nama_kandungan": k["nama_kandungan"],
-                "c1": round(decision_matrix[i][0], 4),
-                "c2": round(decision_matrix[i][1], 4),
-                "c3": round(decision_matrix[i][2], 4),
-                "c4": round(decision_matrix[i][3], 4)
+                "c1": round(decision_matrix[i][0], 6),
+                "c2": round(decision_matrix[i][1], 6),
+                "c3": round(decision_matrix[i][2], 6),
+                "c4": round(decision_matrix[i][3], 6)
             }
             for i, k in enumerate(kandungan_list)
         ]
@@ -331,10 +191,10 @@ def hitung_topsis_detailed(c1_user: str, c2_user: str, c3_user: str) -> Dict[str
         matriksNormalisasi = [
             {
                 "nama_kandungan": k["nama_kandungan"],
-                "c1": round(normalized_matrix[i][0], 4),
-                "c2": round(normalized_matrix[i][1], 4),
-                "c3": round(normalized_matrix[i][2], 4),
-                "c4": round(normalized_matrix[i][3], 4)
+                "c1": round(normalized_matrix[i][0], 6),
+                "c2": round(normalized_matrix[i][1], 6),
+                "c3": round(normalized_matrix[i][2], 6),
+                "c4": round(normalized_matrix[i][3], 6)
             }
             for i, k in enumerate(kandungan_list)
         ]
@@ -348,10 +208,10 @@ def hitung_topsis_detailed(c1_user: str, c2_user: str, c3_user: str) -> Dict[str
         matriksBerbobot = [
             {
                 "nama_kandungan": k["nama_kandungan"],
-                "v1": round(weighted_matrix[i][0], 4),
-                "v2": round(weighted_matrix[i][1], 4),
-                "v3": round(weighted_matrix[i][2], 4),
-                "v4": round(weighted_matrix[i][3], 4)
+                "v1": round(weighted_matrix[i][0], 6),
+                "v2": round(weighted_matrix[i][1], 6),
+                "v3": round(weighted_matrix[i][2], 6),
+                "v4": round(weighted_matrix[i][3], 6)
             }
             for i, k in enumerate(kandungan_list)
         ]
@@ -361,8 +221,8 @@ def hitung_topsis_detailed(c1_user: str, c2_user: str, c3_user: str) -> Dict[str
         ideal_negative = [min(col) for col in zip(*weighted_matrix)]
 
         solusiIdeal = {
-            "aPlus": [round(val, 4) for val in ideal_positive],
-            "aMinus": [round(val, 4) for val in ideal_negative]
+            "aPlus": [round(val, 6) for val in ideal_positive],
+            "aMinus": [round(val, 6) for val in ideal_negative]
         }
 
         # 7️⃣ Hitung jarak ke A⁺ dan A⁻
@@ -379,13 +239,13 @@ def hitung_topsis_detailed(c1_user: str, c2_user: str, c3_user: str) -> Dict[str
 
             jarak.append({
                 "nama_kandungan": k["nama_kandungan"],
-                "d_plus": round(d_pos, 4),
-                "d_minus": round(d_neg, 4)
+                "d_plus": round(d_pos, 6),
+                "d_minus": round(d_neg, 6)
             })
 
             preferensi.append({
                 "nama_kandungan": k["nama_kandungan"],
-                "ci": round(ci, 4),
+                "ci": round(ci, 6),
                 "ranking": 0  # akan diisi setelah sorting
             })
 

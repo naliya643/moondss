@@ -137,7 +137,7 @@ export default function HasilPage() {
               karena bersifat teknis dan berpotensi menimbulkan
               salah interpretasi klinis.
             */}
-            {/*
+            
             {result.skor && (
               <p className="text-sm text-green-600 font-medium">
                 Skor Kesesuaian{" "}
@@ -146,7 +146,7 @@ export default function HasilPage() {
                 </span>
               </p>
             )}
-            */}
+            
           </div>
         ) : (
           <div className="bg-white shadow-lg rounded-2xl p-8 max-w-md w-full">
