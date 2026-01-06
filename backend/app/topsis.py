@@ -9,25 +9,13 @@ def hitung_topsis(c1_user: str, c2_user: str, c3_user: str) -> List[Dict[str, An
     cursor = db.cursor(dictionary=True)
 
     try:
-        # 1️⃣ Ambil data kandungan
+        # 1️⃣ Ambil semua data kandungan (TOPSIS sejati: bandingkan semua alternatif)
         cursor.execute("""
             SELECT id, nama_kandungan, deskripsi, c1, c2, c3, c4
             FROM kandungan
         """)
         all_kandungan = cursor.fetchall()
         if not all_kandungan:
-            return []
-
-        # Filter kandungan yang cocok dengan kondisi user
-        from .utils import is_match_c1, is_match_c2, is_safe_severity
-        kandungan_list = [
-            k for k in all_kandungan
-            if is_match_c1(k["c1"], c1_user) and
-               is_match_c2(k["c2"], c2_user) and
-               is_safe_severity(k["c3"], c3_user)
-        ]
-
-        if not kandungan_list:
             return []
 
         # 2️⃣ Ambil bobot kriteria (urutan HARUS konsisten)
@@ -41,7 +29,7 @@ def hitung_topsis(c1_user: str, c2_user: str, c3_user: str) -> List[Dict[str, An
 
         # 3️⃣ Matriks keputusan (numeric)
         decision_matrix = []
-        for k in kandungan_list:
+        for k in all_kandungan:
             decision_matrix.append([
                 float(convert_c1(k["c1"])),
                 float(convert_c2(k["c2"])),
@@ -62,12 +50,20 @@ def hitung_topsis(c1_user: str, c2_user: str, c3_user: str) -> List[Dict[str, An
         ideal_positive = [max(col) for col in zip(*weighted_matrix)]
         ideal_negative = [min(col) for col in zip(*weighted_matrix)]
 
-        # 7️⃣ Hitung jarak ke A⁺ dan A⁻
+        # 7️⃣ Hitung jarak ke A⁺ dan A⁻, skor Ci, dan adjust berdasarkan kecocokan input
         results = []
-        for i, k in enumerate(kandungan_list):
+        for i, k in enumerate(all_kandungan):
             d_pos = math.sqrt(sum((weighted_matrix[i][j] - ideal_positive[j]) ** 2 for j in range(len(bobot))))
             d_neg = math.sqrt(sum((weighted_matrix[i][j] - ideal_negative[j]) ** 2 for j in range(len(bobot))))
             ci = d_neg / (d_pos + d_neg)  # skor TOPSIS 0-1
+
+            # Adjust Ci berdasarkan kecocokan input user (prioritas c2)
+            if k["c2"] != c2_user:
+                ci *= 0.3  # penalty besar jika c2 tidak cocok
+            if k["c1"] != c1_user:
+                ci *= 0.9  # penalty kecil jika c1 tidak cocok
+            if not is_safe_severity(k["c3"], c3_user):
+                ci *= 0.8  # penalty jika severity tidak safe
 
             results.append({
                 "id": k["id"],
@@ -84,7 +80,9 @@ def hitung_topsis(c1_user: str, c2_user: str, c3_user: str) -> List[Dict[str, An
                 "skor": round(ci, 6)
             })
 
-        # 8️⃣ Ranking
+        # 8️⃣ Ranking berdasarkan skor Ci yang disesuaikan
+        results.sort(key=lambda x: x["skor"], reverse=True)
+
         return results
 
     finally:
@@ -124,25 +122,13 @@ def hitung_topsis_detailed(c1_user: str, c2_user: str, c3_user: str) -> Dict[str
     cursor = db.cursor(dictionary=True)
 
     try:
-        # 1️⃣ Ambil data kandungan dan filter berdasarkan input user
+        # 1️⃣ Ambil semua data kandungan (TOPSIS sejati: bandingkan semua alternatif)
         cursor.execute("""
             SELECT id, nama_kandungan, deskripsi, c1, c2, c3, c4
             FROM kandungan
         """)
         all_kandungan = cursor.fetchall()
         if not all_kandungan:
-            return {}
-
-        # Filter kandungan yang cocok dengan kondisi user
-        from .utils import is_match_c1, is_match_c2, is_safe_severity
-        kandungan_list = [
-            k for k in all_kandungan
-            if is_match_c1(k["c1"], c1_user) and
-               is_match_c2(k["c2"], c2_user) and
-               is_safe_severity(k["c3"], c3_user)
-        ]
-
-        if not kandungan_list:
             return {}
 
         # 2️⃣ Ambil bobot kriteria (urutan HARUS konsisten)
@@ -163,10 +149,10 @@ def hitung_topsis_detailed(c1_user: str, c2_user: str, c3_user: str) -> Dict[str
                 "c3": k["c3"],
                 "c4": k["c4"]
             }
-            for k in kandungan_list
+            for k in all_kandungan
         ]
         decision_matrix = []
-        for k in kandungan_list:
+        for k in all_kandungan:
             decision_matrix.append([
                 float(convert_c1(k["c1"])),
                 float(convert_c2(k["c2"])),
@@ -182,7 +168,7 @@ def hitung_topsis_detailed(c1_user: str, c2_user: str, c3_user: str) -> Dict[str
                 "c3": round(decision_matrix[i][2], 6),
                 "c4": round(decision_matrix[i][3], 6)
             }
-            for i, k in enumerate(kandungan_list)
+            for i, k in enumerate(all_kandungan)
         ]
 
         # 4️⃣ Normalisasi matriks
@@ -196,7 +182,7 @@ def hitung_topsis_detailed(c1_user: str, c2_user: str, c3_user: str) -> Dict[str
                 "c3": round(normalized_matrix[i][2], 6),
                 "c4": round(normalized_matrix[i][3], 6)
             }
-            for i, k in enumerate(kandungan_list)
+            for i, k in enumerate(all_kandungan)
         ]
 
         # 5️⃣ Matriks berbobot
@@ -213,7 +199,7 @@ def hitung_topsis_detailed(c1_user: str, c2_user: str, c3_user: str) -> Dict[str
                 "v3": round(weighted_matrix[i][2], 6),
                 "v4": round(weighted_matrix[i][3], 6)
             }
-            for i, k in enumerate(kandungan_list)
+            for i, k in enumerate(all_kandungan)
         ]
 
         # 6️⃣ Tentukan ideal positif (+) dan negatif (-)
@@ -228,14 +214,18 @@ def hitung_topsis_detailed(c1_user: str, c2_user: str, c3_user: str) -> Dict[str
         # 7️⃣ Hitung jarak ke A⁺ dan A⁻
         jarak = []
         preferensi = []
-        for i, k in enumerate(kandungan_list):
+        for i, k in enumerate(all_kandungan):
             d_pos = math.sqrt(sum((weighted_matrix[i][j] - ideal_positive[j]) ** 2 for j in range(len(bobot))))
             d_neg = math.sqrt(sum((weighted_matrix[i][j] - ideal_negative[j]) ** 2 for j in range(len(bobot))))
             ci = d_neg / (d_pos + d_neg)  # skor TOPSIS 0-1
 
-            # soft penalty (optional, realistis)
+            # Adjust Ci berdasarkan kecocokan input user (prioritas c2)
             if k["c2"] != c2_user:
-                ci *= 0.8
+                ci *= 0.3  # penalty besar jika c2 tidak cocok
+            if k["c1"] != c1_user:
+                ci *= 0.9  # penalty kecil jika c1 tidak cocok
+            if not is_safe_severity(k["c3"], c3_user):
+                ci *= 0.8  # penalty jika severity tidak safe
 
             jarak.append({
                 "nama_kandungan": k["nama_kandungan"],
