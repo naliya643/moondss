@@ -79,7 +79,31 @@ class InputData(BaseModel):
 
 @app.post("/analyze")
 def analyze(data: InputData):
-    hasil = hitung_topsis(data.c1, data.c2, data.c3)
+    # normalize inputs from frontend (users may send lowercase values)
+    def _norm_c2(v: str) -> str:
+        if not v:
+            return v
+        m = {
+            "komedo": "Komedo",
+            "papula": "Papula",
+            "pustula": "Pustula",
+            "nodul": "Nodul",
+            "kistik": "Kistik",
+            "jerawat jamur": "Jerawat Jamur",
+        }
+        return m.get(v.strip().lower(), v.strip())
+
+    def _norm_c3(v: str) -> str:
+        if not v:
+            return v
+        m = {"ringan": "Ringan", "sedang": "Sedang", "berat": "Berat"}
+        return m.get(v.strip().lower(), v.strip())
+
+    c1 = data.c1.strip() if data.c1 else data.c1
+    c2 = _norm_c2(data.c2)
+    c3 = _norm_c3(data.c3)
+
+    hasil = hitung_topsis(c1, c2, c3)
     if not hasil:
         raise HTTPException(status_code=400, detail="Tidak ada hasil analisis")
     return hasil[0]
@@ -87,7 +111,31 @@ def analyze(data: InputData):
 
 @app.post("/admin/perhitungan", dependencies=[Depends(verify_admin_token)])
 def admin_perhitungan(data: InputData):
-    hasil = hitung_topsis_detailed(data.c1, data.c2, data.c3)
+    # normalize admin inputs as well (keep robust to casing/spacing)
+    def _norm_c2(v: str) -> str:
+        if not v:
+            return v
+        m = {
+            "komedo": "Komedo",
+            "papula": "Papula",
+            "pustula": "Pustula",
+            "nodul": "Nodul",
+            "kistik": "Kistik",
+            "jerawat jamur": "Jerawat Jamur",
+        }
+        return m.get(v.strip().lower(), v.strip())
+
+    def _norm_c3(v: str) -> str:
+        if not v:
+            return v
+        m = {"ringan": "Ringan", "sedang": "Sedang", "berat": "Berat"}
+        return m.get(v.strip().lower(), v.strip())
+
+    c1 = data.c1.strip() if data.c1 else data.c1
+    c2 = _norm_c2(data.c2)
+    c3 = _norm_c3(data.c3)
+
+    hasil = hitung_topsis_detailed(c1, c2, c3)
     if not hasil:
         raise HTTPException(status_code=400, detail="Tidak ada hasil perhitungan")
     return hasil
