@@ -1,7 +1,7 @@
 import math
 from typing import List, Dict, Any
 from .database import get_db
-from .utils import convert_c1, convert_c2, convert_c3
+from .utils import convert_c1, convert_c2, convert_c3, is_match_c1, is_match_c2, is_safe_severity
 
 
 def hitung_topsis(c1_user: str, c2_user: str, c3_user: str) -> List[Dict[str, Any]]:
@@ -9,12 +9,24 @@ def hitung_topsis(c1_user: str, c2_user: str, c3_user: str) -> List[Dict[str, An
     cursor = db.cursor(dictionary=True)
 
     try:
-        # 1️⃣ Ambil data kandungan
+        # 1️⃣ Ambil data kandungan dan filter berdasarkan input user
         cursor.execute("""
             SELECT id, nama_kandungan, deskripsi, c1, c2, c3, c4
             FROM kandungan
         """)
-        kandungan_list = cursor.fetchall()
+        all_kandungan = cursor.fetchall()
+        if not all_kandungan:
+            return []
+
+        # Filter kandungan yang cocok dengan kondisi user
+        from .utils import is_match_c1, is_match_c2, is_safe_severity
+        kandungan_list = [
+            k for k in all_kandungan
+            if is_match_c1(k["c1"], c1_user) and
+               is_match_c2(k["c2"], c2_user) and
+               is_safe_severity(k["c3"], c3_user)
+        ]
+
         if not kandungan_list:
             return []
 
@@ -56,10 +68,6 @@ def hitung_topsis(c1_user: str, c2_user: str, c3_user: str) -> List[Dict[str, An
             d_pos = math.sqrt(sum((weighted_matrix[i][j] - ideal_positive[j]) ** 2 for j in range(len(bobot))))
             d_neg = math.sqrt(sum((weighted_matrix[i][j] - ideal_negative[j]) ** 2 for j in range(len(bobot))))
             ci = d_neg / (d_pos + d_neg)  # skor TOPSIS 0-1
-
-            # soft penalty (optional, realistis)
-            if k["c2"] != c2_user:
-                ci *= 0.8
 
             results.append({
                 "id": k["id"],
@@ -256,12 +264,24 @@ def hitung_topsis_detailed(c1_user: str, c2_user: str, c3_user: str) -> Dict[str
     cursor = db.cursor(dictionary=True)
 
     try:
-        # 1️⃣ Ambil data kandungan
+        # 1️⃣ Ambil data kandungan dan filter berdasarkan input user
         cursor.execute("""
             SELECT id, nama_kandungan, deskripsi, c1, c2, c3, c4
             FROM kandungan
         """)
-        kandungan_list = cursor.fetchall()
+        all_kandungan = cursor.fetchall()
+        if not all_kandungan:
+            return {}
+
+        # Filter kandungan yang cocok dengan kondisi user
+        from .utils import is_match_c1, is_match_c2, is_safe_severity
+        kandungan_list = [
+            k for k in all_kandungan
+            if is_match_c1(k["c1"], c1_user) and
+               is_match_c2(k["c2"], c2_user) and
+               is_safe_severity(k["c3"], c3_user)
+        ]
+
         if not kandungan_list:
             return {}
 
@@ -285,8 +305,6 @@ def hitung_topsis_detailed(c1_user: str, c2_user: str, c3_user: str) -> Dict[str
             }
             for k in kandungan_list
         ]
-
-        # 3️⃣ Matriks keputusan (numeric)
         decision_matrix = []
         for k in kandungan_list:
             decision_matrix.append([
