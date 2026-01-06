@@ -24,7 +24,7 @@ if os.path.isdir("static"):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -103,7 +103,11 @@ def analyze(data: InputData):
     c2 = _norm_c2(data.c2)
     c3 = _norm_c3(data.c3)
 
-    hasil = hitung_topsis(c1, c2, c3)
+    try:
+        hasil = hitung_topsis(c1, c2, c3)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error dalam analisis: {str(e)}")
+    
     if not hasil:
         raise HTTPException(status_code=400, detail="Tidak ada hasil analisis")
     return hasil[0]
@@ -135,7 +139,11 @@ def admin_perhitungan(data: InputData):
     c2 = _norm_c2(data.c2)
     c3 = _norm_c3(data.c3)
 
-    hasil = hitung_topsis_detailed(c1, c2, c3)
+    try:
+        hasil = hitung_topsis_detailed(c1, c2, c3)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error dalam perhitungan: {str(e)}")
+    
     if not hasil:
         raise HTTPException(status_code=400, detail="Tidak ada hasil perhitungan")
     return hasil
